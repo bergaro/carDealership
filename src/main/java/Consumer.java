@@ -1,10 +1,12 @@
+
 class Consumer implements Runnable{
 
     CarStore store;
-    Consumer(CarStore store){
-        this.store=store;
-    }
 
+    Consumer(CarStore store){
+        this.store = store;
+    }
+    @Override
     public void run(){
         System.out.println(Thread.currentThread().getName() + " зашёл в автосалон");
         if(store.getProduct() < 1) {

@@ -1,3 +1,7 @@
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
 public class CarStore {
     // Машин в наличие
     private int product=0;
@@ -8,7 +12,11 @@ public class CarStore {
     // Время оформления автомобиля
     private final int carTimeRegistration = 500;
     // Время приёмки нового автомобиля
-    private final int timePickUpCar = 4000;
+    private final int timePickUpCar = 1000;
+    // Блокировка критической секции с включённой поддержкой честности
+    private final Lock lock = new ReentrantLock(true);
+    // Состояние блокировки
+    private final Condition condition = lock.newCondition();
 
     public int getSales() {
         return sales;
@@ -20,34 +28,40 @@ public class CarStore {
     /**
      * Покупка автомобиля
      */
-    public synchronized void buyCar() {
+    public void buyCar() {
         try {
+            lock.lock();
             while (product == 0) {
-                wait();
+                condition.await();
             }
             Thread.sleep(carTimeRegistration);
             product--;
             sales++;
-            notifyAll();
+            condition.signal();
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
+        } finally {
+            lock.unlock();
         }
 
     }
     /**
      * Добавление нового автомобился в салон
      */
-    public synchronized void setCar() {
+    public void setCar() {
         try {
+            lock.lock();
             while (product > 0) {
-                wait();
+                condition.await();
             }
             Thread.sleep(timePickUpCar);
             product++;
             System.out.println("Производитель выпустил 1 авто");
-            notify();
+            condition.signal();
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
+        } finally {
+            lock.unlock();
         }
 
     }

@@ -8,9 +8,11 @@ public class Main {
         CarStore store=new CarStore();
 
         new Thread(null, new Consumer(store), "Покупатель 1").start();
+        getThreadSleep();
         new Thread(null, new Consumer(store), "Покупатель 2").start();
+        getThreadSleep();
         new Thread(null, new Consumer(store), "Покупатель 3").start();
-
+        getThreadSleep();
         Thread producer = new Thread(null, new Producer(store), "Автовоз");
         producer.setDaemon(true);
         producer.start();
@@ -19,15 +21,31 @@ public class Main {
             if (store.getSales() < store.SALES_PLAN) {
                 try {
                     Thread.sleep(buyerVisitTime);
+                    new Thread(null, new Consumer(store), "Покупатель " + ++nameCounter).start();
+                    getThreadSleep();
+                    new Thread(null, new Consumer(store), "Покупатель " + ++nameCounter).start();
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
-                new Thread(null, new Consumer(store), "Покупатель " + ++nameCounter).start();
+
             } else {
                 break;
             }
         }
     }
+    /**
+     * Обыкновенный таймаут потока
+     * Создан для наглядности соблюдения порядка
+     * реентерабельным локом в режиме честности.
+     */
+    private static void getThreadSleep() {
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
 }
 
 
